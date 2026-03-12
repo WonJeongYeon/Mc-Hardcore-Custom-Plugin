@@ -18,6 +18,9 @@ public class MoveListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         manager.enable(e.getPlayer()); // 로그인 자동 ON
+
+        e.getPlayer().setScoreboard(
+                org.bukkit.Bukkit.getScoreboardManager().getNewScoreboard());
     }
 
     @EventHandler

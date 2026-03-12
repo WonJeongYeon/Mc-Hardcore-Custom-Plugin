@@ -5,6 +5,7 @@ import com.example.mc.hud.ActionBarManager;
 import com.example.mc.hud.HudManager;
 import com.example.mc.hud.ScoreBoardManager;
 import com.example.mc.listener.MoveListener;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -50,27 +51,32 @@ public class McCollectorPlugin extends JavaPlugin {
     private void initHud() {
         hudManager = new HudManager();
 
+        getServer().getPluginManager().registerEvents(new MoveListener(hudManager), this);
+
         scoreBoardManager = new ScoreBoardManager(this, hudManager);
         actionBarManager = new ActionBarManager(this, hudManager);
 
         scoreBoardManager.start();
         actionBarManager.start();
 
-        getServer().getPluginManager().registerEvents(new MoveListener(hudManager), this);
+        PluginCommand cmd = getCommand("hud");
+        if (cmd != null) {
+            cmd.setExecutor((sender, command, label, args) -> {
+                if (!(sender instanceof Player p)) return true;
 
-        getCommand("hud").setExecutor((sender, command, label, args) -> {
-            if (!(sender instanceof Player p)) return true;
+                hudManager.toggle(p);
 
-            hudManager.toggle(p);
-
-            if (hudManager.isEnabled(p)) {
-                p.sendMessage("§aHUD 활성화됨");
-            } else {
-                p.getScoreboard().clearSlot(org.bukkit.scoreboard.DisplaySlot.SIDEBAR);
-                p.sendMessage("§cHUD 비활성화됨");
-            }
-            return true;
-        });
+                if (hudManager.isEnabled(p)) {
+                    p.sendMessage("§aHUD 활성화됨");
+                } else {
+                    p.getScoreboard().clearSlot(org.bukkit.scoreboard.DisplaySlot.SIDEBAR);
+                    p.sendMessage("§cHUD 비활성화됨");
+                }
+                return true;
+            });
+        } else {
+            getLogger().severe("[HudManager] Command 'hud' is null");
+        }
     }
 
 

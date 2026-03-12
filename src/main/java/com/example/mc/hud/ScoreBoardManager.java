@@ -24,10 +24,14 @@ public class ScoreBoardManager extends BukkitRunnable {
             if (!manager.isEnabled(player)) continue;
 
             Scoreboard board = player.getScoreboard();
+            if (board == Bukkit.getScoreboardManager().getMainScoreboard()) {
+                board = Bukkit.getScoreboardManager().getNewScoreboard();
+                player.setScoreboard(board);
+            }
             Objective obj = board.getObjective("hud");
 
             if (obj == null) {
-                obj = board.registerNewObjective("hud", "dummy", "§a§lPLAYER INFO");
+                obj = board.registerNewObjective("hud", "dummy", "§a§lINFO");
                 obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 
                 createLine(board, obj, "x", 6);
