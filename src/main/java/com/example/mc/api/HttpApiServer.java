@@ -5,11 +5,13 @@ import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import lombok.RequiredArgsConstructor;
 import com.sun.net.httpserver.HttpServer;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 
 @RequiredArgsConstructor
 public class HttpApiServer {
@@ -56,8 +58,30 @@ public class HttpApiServer {
     }
 
     private void handleStatus(HttpExchange exchange) throws IOException {
-        String response = "Online players: " + plugin.getServer().getOnlinePlayers().size();
-        sendResponse(exchange, response);
+//        String response = "Online players: " + plugin.getServer().getOnlinePlayers().size();
+//        sendResponse(exchange, response);
+        int players = Bukkit.getOnlinePlayers().size();
+        int max = Bukkit.getMaxPlayers();
+        double tps = Bukkit.getTPS()[0];
+
+        String json = """
+                        {
+                          "online": true,
+                          "players": %d,
+                          "maxPlayers": %d,
+                          "tps": %.2f
+                        }
+                        """.formatted(players, max, tps);
+
+        byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+
+        exchange.getResponseHeaders().add("Content-Type", "application/json; charset=utf-8");
+        exchange.sendResponseHeaders(200, bytes.length);
+
+
+        OutputStream os = exchange.getResponseBody();
+        os.write(bytes);
+        os.close();
     }
 
     private void sendResponse(HttpExchange exchange, String response) throws IOException {
