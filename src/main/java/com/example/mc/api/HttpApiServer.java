@@ -1,6 +1,7 @@
 package com.example.mc.api;
 
 import com.example.mc.dto.AnnounceMsgReq;
+import com.example.mc.dto.StatusRes;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import lombok.RequiredArgsConstructor;
@@ -58,20 +59,26 @@ public class HttpApiServer {
     }
 
     private void handleStatus(HttpExchange exchange) throws IOException {
-//        String response = "Online players: " + plugin.getServer().getOnlinePlayers().size();
-//        sendResponse(exchange, response);
         int players = Bukkit.getOnlinePlayers().size();
         int max = Bukkit.getMaxPlayers();
         double tps = Bukkit.getTPS()[0];
 
-        String json = """
-                        {
-                          "online": true,
-                          "players": %d,
-                          "maxPlayers": %d,
-                          "tps": %.2f
-                        }
-                        """.formatted(players, max, tps);
+//        String json = """
+//                        {
+//                          "online": true,
+//                          "players": %d,
+//                          "maxPlayers": %d,
+//                          "tps": %.2f
+//                        }
+//                        """.formatted(players, max, tps);
+
+        StatusRes statusRes = StatusRes.builder()
+                .online(true)
+                .players(players)
+                .maxPlayers(max)
+                .tps(tps)
+                .build();
+        String json = gson.toJson(statusRes);
 
         byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
 

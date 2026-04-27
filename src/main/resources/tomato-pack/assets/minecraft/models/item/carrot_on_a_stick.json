@@ -1,0 +1,12 @@
+{
+  "parent": "block/cross",
+  "textures": {
+    "layer0": "item/carrot_on_a_stick"
+  },
+  "overrides": [
+    { "predicate": { "custom_model_data": 2100 }, "model": "item/tomato_stage_0" },
+    { "predicate": { "custom_model_data": 2101 }, "model": "item/tomato_stage_1" },
+    { "predicate": { "custom_model_data": 2102 }, "model": "item/tomato_stage_2" },
+    { "predicate": { "custom_model_data": 2103 }, "model": "item/tomato_stage_3" }
+  ]
+}

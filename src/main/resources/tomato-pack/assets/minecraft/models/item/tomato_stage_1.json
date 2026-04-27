@@ -1,0 +1,6 @@
+{
+  "parent": "block/cross",
+  "textures": {
+    "layer0": "block/beetroots_stage1"
+  }
+}

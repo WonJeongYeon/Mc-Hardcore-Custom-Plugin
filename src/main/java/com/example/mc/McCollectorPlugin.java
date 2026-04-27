@@ -4,7 +4,9 @@ import com.example.mc.api.HttpApiServer;
 import com.example.mc.hud.ActionBarManager;
 import com.example.mc.hud.HudManager;
 import com.example.mc.hud.ScoreBoardManager;
+import com.example.mc.item.Tomato;
 import com.example.mc.listener.MoveListener;
+import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -23,6 +25,21 @@ public class McCollectorPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         getLogger().info("[Main] McCollector Enabled");
+
+        Tomato tomato = new Tomato(this);
+        getServer().getPluginManager().registerEvents(tomato, this);
+        Bukkit.getScheduler().runTaskTimer(this, tomato::growTomatoes, 0L, 20L * 10);
+        PluginCommand cmd = getCommand("tomato");
+        if (cmd != null) {
+            cmd.setExecutor((sender, command, label, args) -> {
+                if (!(sender instanceof Player p)) return true;
+
+                p.getInventory().addItem(tomato.createTomatoSeed());
+                p.sendMessage("§a토마토 씨앗 지급됨");
+                return true;
+            });
+        }
+
         httpApiServer = new HttpApiServer(this);
         try {
             httpApiServer.start(9000);
