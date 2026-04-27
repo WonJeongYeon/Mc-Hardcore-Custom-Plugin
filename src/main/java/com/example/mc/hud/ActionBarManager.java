@@ -1,5 +1,6 @@
 package com.example.mc.hud;
 
+import com.example.mc.api.VaultManager;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -14,6 +15,8 @@ public class ActionBarManager extends BukkitRunnable {
 
     private final Plugin plugin;
     private final HudManager manager;
+
+    private final VaultManager vaultManager;
 
     @Override
     public void run() {
@@ -32,11 +35,14 @@ public class ActionBarManager extends BukkitRunnable {
                 maxHealth = attr.getValue();
             }
 
+            double money = vaultManager.getEconomy().getBalance(player);
+
             String text = String.format(
-                    "§aLV %d §7| §cHP %d/%d",
+                    "§aLV %d §7| §cHP %d/%d §7| §6₩ %,d",
                     level,
                     (int) health,
-                    (int) maxHealth
+                    (int) maxHealth,
+                    (int) money
             );
 
             player.sendActionBar(Component.text(text));

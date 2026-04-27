@@ -2,8 +2,11 @@ name: McCollector
 version: 1.0.2
 main: com.example.mc.McCollectorPlugin
 api-version: 1.21
+depend: [Vault]
 commands:
   hud:
     description: Toggle HUD
-  tomato:
-    description: give tomato seed
+  moneytest:
+    description: test money
+  money:
+    description: out money

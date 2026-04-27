@@ -1,10 +1,13 @@
 package com.example.mc;
 
 import com.example.mc.api.HttpApiServer;
+import com.example.mc.api.VaultManager;
+import com.example.mc.command.BillCommand;
 import com.example.mc.hud.ActionBarManager;
 import com.example.mc.hud.HudManager;
 import com.example.mc.hud.ScoreBoardManager;
-import com.example.mc.item.Tomato;
+import com.example.mc.item.Bill;
+import com.example.mc.listener.BillListener;
 import com.example.mc.listener.MoveListener;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
@@ -18,6 +21,8 @@ public class McCollectorPlugin extends JavaPlugin {
 
     private HudManager hudManager;
 
+    private VaultManager vaultManager;
+
     private ActionBarManager actionBarManager;
     private ScoreBoardManager scoreBoardManager;
 
@@ -26,19 +31,10 @@ public class McCollectorPlugin extends JavaPlugin {
     public void onEnable() {
         getLogger().info("[Main] McCollector Enabled");
 
-        Tomato tomato = new Tomato(this);
-        getServer().getPluginManager().registerEvents(tomato, this);
-        Bukkit.getScheduler().runTaskTimer(this, tomato::growTomatoes, 0L, 20L * 10);
-        PluginCommand cmd = getCommand("tomato");
-        if (cmd != null) {
-            cmd.setExecutor((sender, command, label, args) -> {
-                if (!(sender instanceof Player p)) return true;
+        initVault();
 
-                p.getInventory().addItem(tomato.createTomatoSeed());
-                p.sendMessage("§a토마토 씨앗 지급됨");
-                return true;
-            });
-        }
+        initTestVaultCommand();
+        initBill();
 
         httpApiServer = new HttpApiServer(this);
         try {
@@ -47,6 +43,7 @@ public class McCollectorPlugin extends JavaPlugin {
             getLogger().severe("[Main] HTTP Server start failed");
             e.printStackTrace();
         }
+
         try {
             initHud();
         } catch (Exception e) {
@@ -71,7 +68,7 @@ public class McCollectorPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new MoveListener(hudManager), this);
 
         scoreBoardManager = new ScoreBoardManager(this, hudManager);
-        actionBarManager = new ActionBarManager(this, hudManager);
+        actionBarManager = new ActionBarManager(this, hudManager, vaultManager);
 
         scoreBoardManager.start();
         actionBarManager.start();
@@ -94,6 +91,40 @@ public class McCollectorPlugin extends JavaPlugin {
         } else {
             getLogger().severe("[HudManager] Command 'hud' is null");
         }
+    }
+
+    private void initVault() {
+        vaultManager = new VaultManager();
+
+        if (!vaultManager.setup(this)) {
+            getLogger().severe("Vault 연결 실패");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
+        getLogger().info("Vault 연결 성공");
+    }
+
+    private void initTestVaultCommand() {
+        getCommand("moneytest").setExecutor((sender, cmd, label, args) -> {
+            if (!(sender instanceof Player p)) return true;
+
+            vaultManager.getEconomy().depositPlayer(p, 1000);
+            p.sendMessage("1000원 지급됨");
+
+            return true;
+        });
+    }
+
+    private void initBill() {
+        Bill bill = new Bill(this);
+
+        getServer().getPluginManager().registerEvents(
+                new BillListener(bill, vaultManager.getEconomy()),
+                this
+        );
+
+        getCommand("money").setExecutor(new BillCommand(bill, vaultManager));
     }
 
 
