@@ -9,6 +9,10 @@ import com.example.mc.hud.ScoreBoardManager;
 import com.example.mc.item.Bill;
 import com.example.mc.listener.BillListener;
 import com.example.mc.listener.MoveListener;
+import com.example.mc.listener.PlayerJoinListener;
+import com.example.mc.module.PlayerJoinManager;
+import com.example.mc.module.RabbitMqManager;
+import com.example.mc.module.UtilManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
@@ -19,9 +23,15 @@ public class McCollectorPlugin extends JavaPlugin {
 
     private HttpApiServer httpApiServer;
 
+    private RabbitMqManager rabbitMqManager;
+
+    private UtilManager utilManager;
+
     private HudManager hudManager;
 
     private VaultManager vaultManager;
+
+    private PlayerJoinManager playerJoinManager;
 
     private ActionBarManager actionBarManager;
     private ScoreBoardManager scoreBoardManager;
@@ -32,9 +42,12 @@ public class McCollectorPlugin extends JavaPlugin {
         getLogger().info("[Main] McCollector Enabled");
 
         initVault();
-
+        utilManager = new UtilManager();
         initTestVaultCommand();
         initBill();
+
+        initMQ();
+        initListener();
 
         httpApiServer = new HttpApiServer(this);
         try {
@@ -60,6 +73,14 @@ public class McCollectorPlugin extends JavaPlugin {
         }
         if (actionBarManager != null) actionBarManager.stop();
         if (scoreBoardManager != null) scoreBoardManager.stop();
+    }
+
+    private void initListener() {
+        playerJoinManager = new PlayerJoinManager(rabbitMqManager, utilManager);
+        getServer().getPluginManager().registerEvents(
+                new PlayerJoinListener(playerJoinManager),
+                this
+        );
     }
 
     private void initHud() {
@@ -127,5 +148,16 @@ public class McCollectorPlugin extends JavaPlugin {
         getCommand("money").setExecutor(new BillCommand(bill, vaultManager));
     }
 
+    private void initMQ() {
+        rabbitMqManager = new RabbitMqManager(
+                this,
+                "localhost",
+                5672,
+                "mc",
+                "mc1234"
+        );
+
+        rabbitMqManager.start();
+    }
 
 }

@@ -29,7 +29,7 @@ public class BillCommand implements CommandExecutor {
         try {
             amount = Integer.parseInt(args[0]);
         } catch (Exception e) {
-            player.sendMessage("§c올바른 금액 입력을 입력하세요.");
+            player.sendMessage("§c올바른 금액을 입력하세요.");
             return true;
         }
 
